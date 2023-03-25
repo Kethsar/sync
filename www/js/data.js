@@ -103,6 +103,7 @@ var LASTCHAT = {
     name: "",
     time: 0
 };
+var POLL_VOTES = 0;
 var FOCUSED = true;
 var PAGETITLE = "CyTube";
 var TITLE_BLINK;

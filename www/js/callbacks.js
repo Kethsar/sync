@@ -940,9 +940,13 @@ const Callbacks = {
                 socket.emit("vote", {
                     option: i
                 });
+                POLL_VOTES += 1;
                 poll.find(".option button").each(function() {
                     $(this).removeClass("active");
                     $(this).parent().removeClass("option-selected");
+                    if (POLL_VOTES >= 5) {
+                        $(this).attr("disabled", true);
+                    }
                 });
                 $(this).addClass("active");
                 $(this).parent().addClass("option-selected");
@@ -971,6 +975,7 @@ const Callbacks = {
     },
 
     closePoll: function() {
+        POLL_VOTES = 0;
         if($("#pollwrap .active").length != 0) {
             var poll = $("#pollwrap .active");
             poll.removeClass("active").addClass("muted");
