@@ -12,6 +12,7 @@ function OptionsModule(_channel) {
     this.opts = {
         allow_voteskip: true,      // Allow users to voteskip
         voteskip_ratio: 0.5,       // Ratio of skip votes:non-afk users needed to skip the video
+        voteskip_minimum: 1,       // Minimum vote skips before a video can be skipped, regardless of ratio
         afk_timeout: 600,          // Number of seconds before a user is automatically marked afk
         pagetitle: this.channel.name, // Title of the browser tab
         maxlength: 0,              // Maximum length (in seconds) of a video queued
@@ -134,6 +135,22 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
             sendUpdate = true;
             user.socket.emit("validationPassed", {
                 target: "#cs-voteskip_ratio"
+            });
+        }
+    }
+
+    if ("voteskip_minimum" in data) {
+        const minimum = parseInt(data.voteskip_minimum);
+        if (isNaN(minimum) || minimum < 1) { // Require at least one vote, see #944
+            user.socket.emit("validationError", {
+                target: "#cs-voteskip_minimum",
+                message: `Input must be a whole number greater than 0, not "${data.voteskip_minimum}"`
+            });
+        } else {
+            this.opts.voteskip_minimum = minimum;
+            sendUpdate = true;
+            user.socket.emit("validationPassed", {
+                target: "#cs-voteskip_minimum"
             });
         }
     }

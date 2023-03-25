@@ -81,7 +81,7 @@ VoteskipModule.prototype.update = function () {
     const { counts } = this.poll.toUpdateFrame(false);
     const { total, eligible, noPermission, afk } = this.calcUsercounts();
     const need = Math.max(
-        1, // Require at least one vote, see #944
+        this.channel.modules.options.get("voteskip_minimum"),
         Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"))
     );
     if (counts[0] >= need) {
@@ -117,7 +117,10 @@ VoteskipModule.prototype.sendVoteskipData = function (users) {
         const { counts } = this.poll.toUpdateFrame(false);
         data = {
             count: counts[0],
-            need: Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"))
+            need: Math.max(
+                this.channel.modules.options.get("voteskip_minimum"),
+                Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"))
+            )
         };
     } else {
         data = {
