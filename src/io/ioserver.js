@@ -271,7 +271,7 @@ class IOServer {
              *
              * https://github.com/calzoneman/sync/issues/780
              */
-            pingTimeout: 120000,
+            pingTimeout: 240000,
 
             /*
              * Per `ws` docs: "Note that Node.js has a variety of issues with
