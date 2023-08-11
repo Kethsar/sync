@@ -502,7 +502,7 @@ function makeQueueEntry(item, addbtns) {
     }
 
     if(addbtns)
-        addQueueButtons(li);
+        addQueueButtons(li, item);
     return li;
 }
 
