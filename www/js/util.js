@@ -527,7 +527,7 @@ function makeSearchEntry(video) {
     return li;
 }
 
-function addQueueButtons(li) {
+function addQueueButtons(li, item) {
     li.find(".btn-group").remove();
     var menu = $("<div/>").addClass("btn-group").appendTo(li);
     // Play
@@ -552,7 +552,7 @@ function addQueueButtons(li) {
             .appendTo(menu);
     }
     // Temp/Untemp
-    if(hasPermission("settemp")) {
+    if(hasPermission("settemp") || item?.queueby === CLIENT.name) {
         var tempstr = li.data("temp")?"Make Permanent":"Make Temporary";
         $("<button/>").addClass("btn btn-xs btn-default qbtn-tmp")
             .html("<span class='glyphicon glyphicon-flag'></span>" + tempstr)

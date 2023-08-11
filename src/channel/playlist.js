@@ -589,7 +589,8 @@ PlaylistModule.prototype.queueYouTubePlaylist = function (user, data) {
 PlaylistModule.prototype.handleDelete = function (user, data) {
     var self = this;
     var perms = this.channel.modules.permissions;
-    if (!perms.canDeleteVideo(user)) {
+    var plitem = this.items.find(data);
+    if (!perms.canDeleteVideo(user) && plitem.queueby !== user.getName()) {
         return;
     }
 
