@@ -191,9 +191,16 @@ KickBanModule.prototype.handleCmdKick = function (user, msg, _meta) {
     this.channel.logger.log("[mod] " + user.getName() + " kicked " + target.getName() +
                             " (" + reason + ")");
     if (this.channel.modules.chat) {
-        this.channel.modules.chat.sendMessage(
-            `${user.getName()} kicked ${target.getName()}${reason ? ` (${reason})` : ''}`
-        );
+        const msgobj = {
+            username: "[server]",
+            msg: `${user.getName()} kicked ${target.getName()}${reason ? ` (${reason})` : ''}`,
+            meta: {
+                addClass: "server-whisper",
+                addClassToNameAndTimestamp: true
+            },
+            time: Date.now()
+        };
+        this.channel.modules.chat.sendMessage(msgobj);
     }
 };
 
@@ -211,9 +218,16 @@ KickBanModule.prototype.handleCmdKickAnons = function (user, _msg, _meta) {
 
     this.channel.logger.log("[mod] " + user.getName() + " kicked anonymous users.");
     if (this.channel.modules.chat) {
-        this.channel.modules.chat.sendMessage(
-            `${user.getName()} kicked anonymous users`
-        );
+        const msgobj = {
+            username: "[server]",
+            msg: `${user.getName()} kicked anonymous users`,
+            meta: {
+                addClass: "server-whisper",
+                addClassToNameAndTimestamp: true
+            },
+            time: Date.now()
+        };
+        this.channel.modules.chat.sendMessage(msgobj);
     }
 };
 
@@ -319,9 +333,16 @@ KickBanModule.prototype.banName = async function banName(actor, name, reason) {
     chan.logger.log("[mod] " + actor.getName() + " namebanned " + name);
 
     if (chan.modules.chat) {
-        chan.modules.chat.sendMessage(
-            `${actor.getName()} namebanned ${name}${reason ? ` (${reason})` : ''}`
-        );
+        const msgobj = {
+            username: "[server]",
+            msg: `${actor.getName()} namebanned ${name}${reason ? ` (${reason})` : ''}`,
+            meta: {
+                addClass: "server-whisper",
+                addClassToNameAndTimestamp: true
+            },
+            time: Date.now()
+        };
+        chan.modules.chat.sendMessage(msgobj);
     }
 
     this.kickBanTarget(name, null, actor.getName(), reason);
@@ -366,9 +387,16 @@ KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
     );
 
     if (chan.modules.chat) {
-        chan.modules.chat.sendMessage(
-            `${actor.getName()} banned ${cloaked} (${name})${reason ? ` (${reason})` : ''}"`
-        );
+        const msgobj = {
+            username: "[server]",
+            msg: `${actor.getName()} banned ${cloaked} (${name})${reason ? ` (${reason})` : ''}"`,
+            meta: {
+                addClass: "server-whisper",
+                addClassToNameAndTimestamp: true
+            },
+            time: Date.now()
+        };
+        chan.modules.chat.sendMessage(msgobj);
     }
 
     this.kickBanTarget(name, ip, actor.getName(), reason);
