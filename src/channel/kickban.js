@@ -456,7 +456,7 @@ KickBanModule.prototype.kickBanTarget = function (name, ip, actor, reason) {
     for (var i = 0; i < this.channel.users.length; i++) {
         if (this.channel.users[i].getLowerName() === name ||
             this.channel.users[i].realip === ip) {
-            this.channel.users[i].kick(`You were banned by ${actor}${reason ? ` (${reasib})` : ''}`);
+            this.channel.users[i].kick(`You were banned by ${actor}${reason ? ` (${reason})` : ''}`);
         }
     }
 };
