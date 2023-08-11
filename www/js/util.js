@@ -552,7 +552,7 @@ function addQueueButtons(li, item) {
             .appendTo(menu);
     }
     // Temp/Untemp
-    if(hasPermission("settemp") || item?.queueby === CLIENT.name) {
+    if(hasPermission("settemp")) {
         var tempstr = li.data("temp")?"Make Permanent":"Make Temporary";
         $("<button/>").addClass("btn btn-xs btn-default qbtn-tmp")
             .html("<span class='glyphicon glyphicon-flag'></span>" + tempstr)
@@ -565,7 +565,7 @@ function addQueueButtons(li, item) {
             .appendTo(menu);
     }
     // Delete
-    if(hasPermission("playlistdelete")) {
+    if(hasPermission("playlistdelete") || item?.queueby === CLIENT.name) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-delete")
             .html("<span class='glyphicon glyphicon-trash'></span>Delete")
             .on('click', function() {
