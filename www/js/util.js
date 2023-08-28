@@ -1585,8 +1585,8 @@ function addChatMessage(data) {
     div.on('mouseleave', function() {
         $(".nick-hover").removeClass("nick-hover");
     });
-    var oldHeight = msgBuf.prop("scrollHeight");
-    var numRemoved = trimChatBuffer();
+    //var oldHeight = msgBuf.prop("scrollHeight");
+    //var numRemoved = trimChatBuffer();
     if (SCROLLCHAT) {
         scrollChat();
     } else {
@@ -1608,19 +1608,21 @@ function addChatMessage(data) {
             });
         }
 
+        /*
         if (numRemoved > 0) {
             IGNORE_SCROLL_EVENT = true;
             var diff = oldHeight - msgBuf.prop("scrollHeight");
             scrollAndIgnoreEvent(msgBuf.scrollTop() - diff);
         }
+        */
     }
 
     div.find("img").load(function () {
         if (SCROLLCHAT) {
             scrollChat();
-        } else if ($(this).position().top < 0) {
+        } /* else if ($(this).position().top < 0) {
             scrollAndIgnoreEvent(msgBuf.scrollTop() + $(this).height());
-        }
+        }*/
     });
 
     var isHighlight = false;
