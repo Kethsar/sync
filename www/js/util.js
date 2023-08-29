@@ -1905,15 +1905,100 @@ function handleVideoResize() {
 $(window).on('resize', handleWindowResize);
 handleWindowResize();
 
+function removeUntilNext() {
+    socket.once("changeMedia", showVideo);
+    return removeVideo()
+}
+
 function removeVideo(event) {
-    try {
-        PLAYER.setVolume(0);
-    } catch (e) {
+    const videoWrap = document.getElementById("videowrap");
+    const hideVidLink = document.querySelector("#hideVideo a");
+    videoWrap.style.display = "none";
+    $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-md-12");
+    hideVidLink.innerText = 'Show Video';
+    hideVidLink.attributes["onclick"].value = "javascript:showVideo(event)";
+    deleteVideo();
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function showVideo(event) {
+    const videoWrap = document.getElementById("videowrap");
+    const hideVidLink = document.querySelector("#hideVideo a");
+    $("#chatwrap").addClass("col-lg-5 col-md-5").removeClass("col-md-12");
+    videoWrap.style.display = "";
+    hideVidLink.innerText = 'Hide Video';
+    hideVidLink.attributes["onclick"].value = "javascript:removeVideo(event)";
+    restoreVideo();
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function deleteVideo(event) {
+    const container = document.getElementById('video-container');
+    const delVidLink = document.querySelector("#delVideo a");
+    const isEmpty = container.innerHTML === '';
+
+    if (!isEmpty)  {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        document.body.classList.add('chatOnly'); // Should prevent cytube from trying to load videos while the player is deleted
+        delVidLink.innerText = 'Restore Video';
+        delVidLink.attributes["onclick"].value = "javascript:restoreVideo(event)";
+
+        if (PLAYER) {
+            try {
+                PLAYER.destroy();
+            } catch (ex) {
+                console.log(`error destroying player when deleting video: ${ex}`);
+            }
+        }
+        handleWindowResize();
     }
 
-    $("#videowrap").remove();
-    $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-md-12");
-    if (event) event.preventDefault();
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function restoreVideo(event) {
+    const videoWrap = document.getElementById("videowrap");
+    if (videoWrap.style.display === "none") {
+        showVideo();
+        return;
+    }
+
+    const container = document.getElementById('video-container');
+    const delVidLink = document.querySelector("#delVideo a");
+    const isEmpty = container.innerHTML === '';
+
+    if (isEmpty) {
+        container.innerHTML = '<div id="ytapiplayer"></div>';
+        container.style.display = 'block';
+        document.body.classList.remove('chatOnly');
+
+        setTimeout(() => {
+            document.getElementById("mediarefresh").click();
+            delVidLink.innerText = 'Delete Video';
+            delVidLink.attributes["onclick"].value = "javascript:deleteVideo(event)";
+        }, 100);
+        handleWindowResize();
+    }
+
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function toggleChat() {
+    const chatWrap = document.getElementById("chatwrap");
+    if (chatWrap.style.display === "none") {
+        chatWrap.style.display = "";
+        $("#videowrap").css("margin", "");
+        $("#videowrap").css("float", "");
+        $("#videowrap").css("margin-bottom", "");
+        $('a[onclick*="toggleChat"]').text("Remove Chat");
+    } else {
+        chatWrap.style.display = "none";
+        $("#videowrap").css("margin", "0 auto");
+        $("#videowrap").css("float", "initial");
+        $("#videowrap").css("margin-bottom", "20px");
+        $('a[onclick*="toggleChat"]').text("Restore Chat")
+    }
 }
 
 /* channel administration stuff */
