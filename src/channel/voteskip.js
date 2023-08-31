@@ -36,6 +36,10 @@ VoteskipModule.prototype.handleVoteskip = function (user) {
         return;
     }
 
+    if (user.is(Flags.U_VIDEO_REMOVED)) {
+        return;
+    }
+
     if (!this.poll) {
         this.poll = Poll.create("[server]", "voteskip", ["skip"]);
     }
@@ -79,7 +83,7 @@ VoteskipModule.prototype.update = function () {
     }
 
     const { counts } = this.poll.toUpdateFrame(false);
-    const { total, eligible, noPermission, afk } = this.calcUsercounts();
+    const { total, eligible, noPermission, afk, vidRemoved } = this.calcUsercounts();
     const need = Math.max(
         this.channel.modules.options.get("voteskip_minimum"),
         Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"))
@@ -87,7 +91,7 @@ VoteskipModule.prototype.update = function () {
     if (counts[0] >= need) {
         const info = `${counts[0]}/${eligible} skipped; ` +
             `eligible voters: ${eligible} = total (${total}) - AFK (${afk}) ` +
-            `- no permission (${noPermission}); ` +
+            `- video removed (${vidRemoved}) - no permission (${noPermission}); ` +
             `ratio = ${this.channel.modules.options.get("voteskip_ratio")}`;
         this.channel.logger.log(`[playlist] Voteskip passed: ${info}`);
         this.channel.broadcastAll(
@@ -140,16 +144,17 @@ VoteskipModule.prototype.sendVoteskipData = function (users) {
 
 VoteskipModule.prototype.calcUsercounts = function () {
     const perms = this.channel.modules.permissions;
-    const counts = { total: 0, noPermission: 0, afk: 0 };
+    const counts = { total: 0, noPermission: 0, afk: 0, vidRemoved: 0 };
 
     this.channel.users.forEach(u => {
         counts.total++;
 
         if (!perms.canVoteskip(u))  counts.noPermission++;
         else if (u.is(Flags.U_AFK)) counts.afk++;
+        else if (u.is(Flags.U_VIDEO_REMOVED)) counts.vidRemoved++;
     });
 
-    counts.eligible = counts.total - (counts.noPermission + counts.afk);
+    counts.eligible = counts.total - (counts.noPermission + counts.afk + counts.vidRemoved);
 
     return counts;
 };

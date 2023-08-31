@@ -838,7 +838,7 @@ const Callbacks = {
         }
 
         // Reset voteskip since the video changed
-        if (CHANNEL.opts.allow_voteskip) {
+        if (CHANNEL.opts.allow_voteskip && !CLIENT.videoRemoved) {
             $("#voteskip").attr("disabled", false);
         }
 
@@ -1167,7 +1167,7 @@ const Callbacks = {
     },
 
     clearVoteskipVote: function () {
-        if (CHANNEL.opts.allow_voteskip && hasPermission("voteskip")) {
+        if (CHANNEL.opts.allow_voteskip && hasPermission("voteskip") && !CLIENT.videoRemoved) {
             $("#voteskip").attr("disabled", false);
         }
     }

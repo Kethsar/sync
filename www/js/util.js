@@ -1080,8 +1080,7 @@ function handlePermissionChange() {
     fixWeirdButtonAlignmentIssue();
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
-    $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
-                                    !CHANNEL.opts.allow_voteskip);
+    setVoteskipDisabled();
 
     $("#pollwrap .active").find(".btn-danger").remove();
     if(hasPermission("pollctl")) {
@@ -1111,6 +1110,12 @@ function handlePermissionChange() {
         $("#chatline").attr("placeholder", "");
     }
     rebuildPlaylist();
+}
+
+function setVoteskipDisabled() {
+    $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
+                                    !CHANNEL.opts.allow_voteskip ||
+                                     CLIENT.videoRemoved);
 }
 
 function fixWeirdButtonAlignmentIssue() {
@@ -1952,6 +1957,9 @@ function deleteVideo(event) {
             }
         }
         handleWindowResize();
+        socket.emit("removeVideo");
+        CLIENT.videoRemoved = true;
+        setVoteskipDisabled();
     }
 
     if (event && event.preventDefault) event.preventDefault();
@@ -1979,6 +1987,9 @@ function restoreVideo(event) {
             delVidLink.attributes["onclick"].value = "javascript:deleteVideo(event)";
         }, 100);
         handleWindowResize();
+        socket.emit("restoreVideo");
+        CLIENT.videoRemoved = false;
+        setVoteskipDisabled();
     }
 
     if (event && event.preventDefault) event.preventDefault();
