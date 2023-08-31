@@ -299,8 +299,7 @@ $("#userpl_save").on('click', function() {
 /* video controls */
 
 $("#mediarefresh").on('click', function() {
-    PLAYER.mediaType = "";
-    PLAYER.mediaId = "";
+    PLAYER = false; // Fixes vimeo sometimes breaking and the refresh button not working
     // playerReady triggers the server to send a changeMedia.
     // the changeMedia handler then reloads the player
     socket.emit("playerReady");

@@ -502,7 +502,7 @@ function makeQueueEntry(item, addbtns) {
     }
 
     if(addbtns)
-        addQueueButtons(li);
+        addQueueButtons(li, item);
     return li;
 }
 
@@ -527,7 +527,7 @@ function makeSearchEntry(video) {
     return li;
 }
 
-function addQueueButtons(li) {
+function addQueueButtons(li, item) {
     li.find(".btn-group").remove();
     var menu = $("<div/>").addClass("btn-group").appendTo(li);
     // Play
@@ -565,7 +565,7 @@ function addQueueButtons(li) {
             .appendTo(menu);
     }
     // Delete
-    if(hasPermission("playlistdelete")) {
+    if(hasPermission("playlistdelete") || item?.queueby === CLIENT.name) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-delete")
             .html("<span class='glyphicon glyphicon-trash'></span>Delete")
             .on('click', function() {
@@ -1080,8 +1080,7 @@ function handlePermissionChange() {
     fixWeirdButtonAlignmentIssue();
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
-    $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
-                                    !CHANNEL.opts.allow_voteskip);
+    setVoteskipDisabled();
 
     $("#pollwrap .active").find(".btn-danger").remove();
     if(hasPermission("pollctl")) {
@@ -1111,6 +1110,12 @@ function handlePermissionChange() {
         $("#chatline").attr("placeholder", "");
     }
     rebuildPlaylist();
+}
+
+function setVoteskipDisabled() {
+    $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
+                                    !CHANNEL.opts.allow_voteskip ||
+                                     CLIENT.videoRemoved);
 }
 
 function fixWeirdButtonAlignmentIssue() {
@@ -1585,8 +1590,8 @@ function addChatMessage(data) {
     div.on('mouseleave', function() {
         $(".nick-hover").removeClass("nick-hover");
     });
-    var oldHeight = msgBuf.prop("scrollHeight");
-    var numRemoved = trimChatBuffer();
+    //var oldHeight = msgBuf.prop("scrollHeight");
+    //var numRemoved = trimChatBuffer();
     if (SCROLLCHAT) {
         scrollChat();
     } else {
@@ -1608,19 +1613,21 @@ function addChatMessage(data) {
             });
         }
 
+        /*
         if (numRemoved > 0) {
             IGNORE_SCROLL_EVENT = true;
             var diff = oldHeight - msgBuf.prop("scrollHeight");
             scrollAndIgnoreEvent(msgBuf.scrollTop() - diff);
         }
+        */
     }
 
     div.find("img").load(function () {
         if (SCROLLCHAT) {
             scrollChat();
-        } else if ($(this).position().top < 0) {
+        } /* else if ($(this).position().top < 0) {
             scrollAndIgnoreEvent(msgBuf.scrollTop() + $(this).height());
-        }
+        }*/
     });
 
     var isHighlight = false;
@@ -1903,15 +1910,106 @@ function handleVideoResize() {
 $(window).on('resize', handleWindowResize);
 handleWindowResize();
 
+function removeUntilNext() {
+    socket.once("changeMedia", showVideo);
+    return removeVideo()
+}
+
 function removeVideo(event) {
-    try {
-        PLAYER.setVolume(0);
-    } catch (e) {
+    const videoWrap = document.getElementById("videowrap");
+    const hideVidLink = document.querySelector("#hideVideo a");
+    videoWrap.style.display = "none";
+    $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-md-12");
+    hideVidLink.innerText = 'Show Video';
+    hideVidLink.attributes["onclick"].value = "javascript:showVideo(event)";
+    deleteVideo();
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function showVideo(event) {
+    const videoWrap = document.getElementById("videowrap");
+    const hideVidLink = document.querySelector("#hideVideo a");
+    $("#chatwrap").addClass("col-lg-5 col-md-5").removeClass("col-md-12");
+    videoWrap.style.display = "";
+    hideVidLink.innerText = 'Hide Video';
+    hideVidLink.attributes["onclick"].value = "javascript:removeVideo(event)";
+    restoreVideo();
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function deleteVideo(event) {
+    const container = document.getElementById('video-container');
+    const delVidLink = document.querySelector("#delVideo a");
+    const isEmpty = container.innerHTML === '';
+
+    if (!isEmpty)  {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        document.body.classList.add('chatOnly'); // Should prevent cytube from trying to load videos while the player is deleted
+        delVidLink.innerText = 'Restore Video';
+        delVidLink.attributes["onclick"].value = "javascript:restoreVideo(event)";
+
+        if (PLAYER) {
+            try {
+                PLAYER.destroy();
+            } catch (ex) {
+                console.log(`error destroying player when deleting video: ${ex}`);
+            }
+        }
+        handleWindowResize();
+        socket.emit("removeVideo");
+        CLIENT.videoRemoved = true;
+        setVoteskipDisabled();
     }
 
-    $("#videowrap").remove();
-    $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-md-12");
-    if (event) event.preventDefault();
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function restoreVideo(event) {
+    const videoWrap = document.getElementById("videowrap");
+    if (videoWrap.style.display === "none") {
+        showVideo();
+        return;
+    }
+
+    const container = document.getElementById('video-container');
+    const delVidLink = document.querySelector("#delVideo a");
+    const isEmpty = container.innerHTML === '';
+
+    if (isEmpty) {
+        container.innerHTML = '<div id="ytapiplayer"></div>';
+        container.style.display = 'block';
+        document.body.classList.remove('chatOnly');
+
+        setTimeout(() => {
+            document.getElementById("mediarefresh").click();
+            delVidLink.innerText = 'Delete Video';
+            delVidLink.attributes["onclick"].value = "javascript:deleteVideo(event)";
+        }, 100);
+        handleWindowResize();
+        socket.emit("restoreVideo");
+        CLIENT.videoRemoved = false;
+        setVoteskipDisabled();
+    }
+
+    if (event && event.preventDefault) event.preventDefault();
+}
+
+function toggleChat() {
+    const chatWrap = document.getElementById("chatwrap");
+    if (chatWrap.style.display === "none") {
+        chatWrap.style.display = "";
+        $("#videowrap").css("margin", "");
+        $("#videowrap").css("float", "");
+        $("#videowrap").css("margin-bottom", "");
+        $('a[onclick*="toggleChat"]').text("Remove Chat");
+    } else {
+        chatWrap.style.display = "none";
+        $("#videowrap").css("margin", "0 auto");
+        $("#videowrap").css("float", "initial");
+        $("#videowrap").css("margin-bottom", "20px");
+        $('a[onclick*="toggleChat"]').text("Restore Chat")
+    }
 }
 
 /* channel administration stuff */

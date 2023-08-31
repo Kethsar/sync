@@ -131,7 +131,11 @@ describe('VoteskipModule', () => {
                 // 1 afk with permission
                 { is(f) { return f === Flags.U_AFK; }, _has_permission: true },
                 // 1 afk without permission
-                { is(f) { return f === Flags.U_AFK; }, _has_permission: false }
+                { is(f) { return f === Flags.U_AFK; }, _has_permission: false },
+                // 1 no video with permission
+                { is(f) { return f === Flags.U_VIDEO_REMOVED; }, _has_permission: true },
+                // 1 no video without permission
+                { is(f) { return f === Flags.U_VIDEO_REMOVED; }, _has_permission: false }
             ]
 
             fakeChannel.modules.permissions.canVoteskip = u => u._has_permission;
@@ -140,16 +144,18 @@ describe('VoteskipModule', () => {
                 total,
                 eligible,
                 afk,
-                noPermission
+                noPermission,
+                vidRemoved
             } = voteskipModule.calcUsercounts();
 
-            assert.strictEqual(total, 4, 'mismatch: total');
+            assert.strictEqual(total, 6, 'mismatch: total');
             assert.strictEqual(eligible, 1, 'mismatch: eligible');
             // Permission is checked before AFK; if user is AFK and also does
             // not have permission, they should be counted in noPermission
             // but not afk
             assert.strictEqual(afk, 1, 'mismatch: afk');
-            assert.strictEqual(noPermission, 2, 'mismatch: noPermission');
+            assert.strictEqual(noPermission, 3, 'mismatch: noPermission');
+            assert.strictEqual(vidRemoved, 1, 'mismatch: vidRemoved');
         });
     });
 });

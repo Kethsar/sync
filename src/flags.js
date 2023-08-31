@@ -11,5 +11,6 @@ module.exports = {
     U_MUTED      : 1 << 5,
     U_SMUTED     : 1 << 6,
     U_IN_CHANNEL : 1 << 7,
-    U_HAS_CHANNEL_RANK: 1 << 8
+    U_HAS_CHANNEL_RANK: 1 << 8,
+    U_VIDEO_REMOVED: 1 << 9,
 };

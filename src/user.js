@@ -53,6 +53,8 @@ function User(socket, ip, loginInfo) {
     socket.once("joinChannel", data => this.handleJoinChannel(data));
     socket.once("initACP", () => this.handleInitACP());
     socket.on("login", data => this.handleLogin(data));
+    socket.on("removeVideo", () => this.handleRemoveVideo());
+    socket.on("restoreVideo", () => this.handleRestoreVideo());
 }
 
 User.prototype = Object.create(EventEmitter.prototype);
@@ -145,6 +147,14 @@ User.prototype.handleLogin = function handleLogin(data) {
     } else {
         this.login(name, pw);
     }
+};
+
+User.prototype.handleRemoveVideo = function () {
+    this.setVideoRemoved(true);
+};
+
+User.prototype.handleRestoreVideo = function () {
+    this.setVideoRemoved(false);
 };
 
 User.prototype.die = function () {
@@ -249,6 +259,41 @@ User.prototype.setAFK = function (afk) {
     }
 
     this.emit('afk', afk);
+};
+
+User.prototype.setVideoRemoved = function(videoRemoved) {
+    if (!this.inChannel()) {
+        return;
+    }
+
+    /* No change in video removal status, don't need to change anything */
+    if (this.is(Flags.U_VIDEO_REMOVED) === videoRemoved) {
+        return;
+    }
+
+    if (videoRemoved) {
+        this.setFlag(Flags.U_VIDEO_REMOVED);
+        if (this.channel.modules.voteskip) {
+            this.channel.modules.voteskip.unvote(this.realip);
+            this.socket.emit("clearVoteskipVote");
+        }
+    } else {
+        this.clearFlag(Flags.U_VIDEO_REMOVED);
+    }
+
+    if (!this.inChannel()) {
+        /*
+         * In unusual circumstances, the above emit("clearVoteskipVote")
+         * can cause the "disconnect" event to be fired synchronously,
+         * which results in this user no longer being in the channel.
+         */
+        return;
+    }
+
+    /* Number of users with video removed changed, voteskip state changes */
+    if (this.channel.modules.voteskip) {
+        this.channel.modules.voteskip.update();
+    }
 };
 
 /* Automatically tag a user as AFK after a period of inactivity */

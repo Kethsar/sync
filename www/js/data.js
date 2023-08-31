@@ -61,7 +61,8 @@ var CLIENT = {
     profile: {
         image: "",
         text: ""
-    }
+    },
+    videoRemoved: false,
 };
 var SUPERADMIN = false;
 
