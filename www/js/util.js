@@ -1912,17 +1912,17 @@ handleWindowResize();
 
 function removeUntilNext() {
     socket.once("changeMedia", showVideo);
-    return removeVideo()
+    return removeVideo(null, true);
 }
 
-function removeVideo(event) {
+function removeVideo(event, untilNext = false) {
     const videoWrap = document.getElementById("videowrap");
     const hideVidLink = document.querySelector("#hideVideo a");
     videoWrap.style.display = "none";
     $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-md-12");
     hideVidLink.innerText = 'Show Video';
     hideVidLink.attributes["onclick"].value = "javascript:showVideo(event)";
-    deleteVideo();
+    deleteVideo(null, untilNext);
     if (event && event.preventDefault) event.preventDefault();
 }
 
@@ -1937,7 +1937,12 @@ function showVideo(event) {
     if (event && event.preventDefault) event.preventDefault();
 }
 
-function deleteVideo(event) {
+function deleteUntilNext() {
+    socket.once("changeMedia", restoreVideo);
+    return deleteVideo(null, true);
+}
+
+function deleteVideo(event, untilNext = false) {
     const container = document.getElementById('video-container');
     const delVidLink = document.querySelector("#delVideo a");
     const isEmpty = container.innerHTML === '';
@@ -1957,9 +1962,12 @@ function deleteVideo(event) {
             }
         }
         handleWindowResize();
-        socket.emit("removeVideo");
-        CLIENT.videoRemoved = true;
-        setVoteskipDisabled();
+
+        if (!untilNext) {
+            socket.emit("removeVideo");
+            CLIENT.videoRemoved = true;
+            setVoteskipDisabled();
+        }
     }
 
     if (event && event.preventDefault) event.preventDefault();
