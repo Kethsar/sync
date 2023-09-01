@@ -385,8 +385,11 @@ function addUserDropdown(entry) {
         }
         return false;
     };
-    entry.contextmenu(showdd);
-    entry.click(showdd);
+
+    entry.off('contextmenu');
+    entry.off('click');
+    entry.on('contextmenu', showdd);
+    entry.on('click', showdd);
 }
 
 function calcUserBreakdown() {
