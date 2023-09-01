@@ -23,6 +23,10 @@ const Callbacks = {
             .appendTo($("#messagebuffer"));
         scrollChat();
         stopQueueSpinner(null);
+
+        if (CLIENT.videoRemoved) {
+            socket.emit("removeVideo");
+        }
     },
 
     disconnect: function() {

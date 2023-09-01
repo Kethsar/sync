@@ -1961,7 +1961,7 @@ function deleteVideo(event, untilNext = false) {
                 console.log(`error destroying player when deleting video: ${ex}`);
             }
         }
-        handleWindowResize();
+        window.dispatchEvent(new Event('resize'));
 
         if (!untilNext) {
             socket.emit("removeVideo");
@@ -1994,7 +1994,7 @@ function restoreVideo(event) {
             delVidLink.innerText = 'Delete Video';
             delVidLink.attributes["onclick"].value = "javascript:deleteVideo(event)";
         }, 100);
-        handleWindowResize();
+        window.dispatchEvent(new Event('resize'));
         socket.emit("restoreVideo");
         CLIENT.videoRemoved = false;
         setVoteskipDisabled();
