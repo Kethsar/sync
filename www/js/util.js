@@ -487,6 +487,7 @@ function makeQueueEntry(item, addbtns) {
     li.data("uid", item.uid);
     li.data("media", video);
     li.data("temp", item.temp);
+    li.data("queueby", item.queueby)
     if(video.thumb) {
         $("<img/>").attr("src", video.thumb.url)
             .css("float", "left")
@@ -505,7 +506,7 @@ function makeQueueEntry(item, addbtns) {
     }
 
     if(addbtns)
-        addQueueButtons(li, item);
+        addQueueButtons(li);
     return li;
 }
 
@@ -530,7 +531,7 @@ function makeSearchEntry(video) {
     return li;
 }
 
-function addQueueButtons(li, item) {
+function addQueueButtons(li) {
     li.find(".btn-group").remove();
     var menu = $("<div/>").addClass("btn-group").appendTo(li);
     // Play
@@ -568,7 +569,7 @@ function addQueueButtons(li, item) {
             .appendTo(menu);
     }
     // Delete
-    if(hasPermission("playlistdelete") || item?.queueby === CLIENT.name) {
+    if(hasPermission("playlistdelete") || li.data("queueby") === CLIENT.name) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-delete")
             .html("<span class='glyphicon glyphicon-trash'></span>Delete")
             .on('click', function() {
