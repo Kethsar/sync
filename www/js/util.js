@@ -1297,6 +1297,11 @@ function playlistMove(from, after, cb) {
     }
 }
 
+function checkYP(id) {
+    if (!/^(PL[a-zA-Z0-9_-]{32}|PL[A-F0-9]{16}|OLA[a-zA-Z0-9_-]{38})$/.test(id)) {
+        throw new Error('Invalid YouTube Playlist ID.  Note that only regular user-created playlists are supported.');
+    }
+}
 
 function parseMediaLink(url) {
     function parseShortCode(url){
@@ -1310,6 +1315,9 @@ function parseMediaLink(url) {
             // Raw files need to keep the query string
             case 'fi':
             case 'cm':
+                return { type, id };
+            case 'yp':
+                checkYP(id);
                 return { type, id };
             // Generic for the rest.
             default:
@@ -1366,6 +1374,7 @@ function parseMediaLink(url) {
                 return { type: 'yt', id: data.pathname.slice(8,19) }
             }
             if(data.pathname == '/playlist'){
+                checkYP(data.searchParams.get('list'));
                 return { type: 'yp', id: data.searchParams.get('list') }
             }
         case 'youtu.be':
@@ -2804,8 +2813,7 @@ function execEmotes(msg) {
     }
 
     CHANNEL.emotes.forEach(function (e) {
-        msg = msg.replace(e.regex, '$1<img class="channel-emote" src="' +
-                                   e.image + '" title="' + e.name + '">');
+        msg = msg.replace(e.regex, '$1' + emoteToImg(e).outerHTML);
     });
 
     return msg;
@@ -2813,18 +2821,25 @@ function execEmotes(msg) {
 
 function execEmotesEfficient(msg) {
     CHANNEL.badEmotes.forEach(function (e) {
-        msg = msg.replace(e.regex, '$1<img class="channel-emote" src="' +
-                          e.image + '" title="' + e.name + '">');
+        msg = msg.replace(e.regex, '$1' + emoteToImg(e).outerHTML);
     });
     msg = msg.replace(/[^\s]+/g, function (m) {
         if (CHANNEL.emoteMap.hasOwnProperty(m)) {
             var e = CHANNEL.emoteMap[m];
-            return '<img class="channel-emote" src="' + e.image + '" title="' + e.name + '">';
+            return emoteToImg(e).outerHTML;
         } else {
             return m;
         }
     });
     return msg;
+}
+
+function emoteToImg(e) {
+    var img = document.createElement('img');
+    img.className = 'channel-emote';
+    img.title = e.name;
+    img.src = e.image;
+    return img;
 }
 
 function initPm(user) {
